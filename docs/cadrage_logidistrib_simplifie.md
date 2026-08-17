@@ -65,13 +65,14 @@ Le projet s'articule autour de deux axes complémentaires, qui explorent les deu
 
 | Niveau | Question métier | KPI mobilisé |
 |---|---|---|
-| 1 — Constat | Y a-t-il déjà eu rupture ? | `Stockout_Flag` |
+| ~~1 — Constat~~ | ~~Y a-t-il déjà eu rupture ?~~ | ~~`Stockout_Flag`~~ *(retiré — colonne constante à 0, cf. Limites §4)* |
 | 2 — Alerte présente | Le stock est-il en danger aujourd'hui ? | Comparaison stock actuel / seuil de réapprovisionnement |
 | 3 — Diagnostic structurel | Le seuil est-il bien calibré ? | Comparaison vitesse de vente × délai fournisseur / seuil de réapprovisionnement |
 
 ### Segmentation
-- **Bucket 1 — Ruptures constatées** : produits en `Stockout_Flag = 1`, avec diagnostic du niveau 3 pour comprendre la cause.
-- **Bucket 2 — Risque potentiel** : niveau 2 **OU** niveau 3 — une seule condition suffit pour entrer dans ce bucket.
+- **Risque immédiat** : Niveau 2 seul — le stock est sous son seuil de réapprovisionnement aujourd'hui.
+- **Risque structurel** : Niveau 3 seul — le seuil lui-même est mal calibré face à la vitesse de vente et au délai fournisseur.
+- **Risque critique** : Niveau 2 **ET** Niveau 3 — les deux signaux se cumulent, priorité de traitement maximale.
 
 ---
 
@@ -97,6 +98,7 @@ Un même nombre de jours de couverture n'a pas la même signification selon la v
 1. **Données synthétiques** — le dataset simule des comportements de demande et de réassort, sans les aléas d'un historique réel.
 2. **Scénario construit a posteriori** — LogiDistrib a été conçu pour encadrer un dataset existant, plutôt que l'inverse.
 3. **KPI précalculés** — `Reorder_Point` et `Stockout_Flag` sont fournis directement par le dataset. En entreprise réelle, ces indicateurs doivent être construits par le Data Analyst à partir de données transactionnelles brutes.
+4. **`Stockout_Flag` inutilisable** — vérification empirique lors de l'EDA : colonne constante à 0. Le Niveau 1 initialement prévu a été retiré de l'Axe 1 (cf. journal des cicatrices).
 
 ---
 
