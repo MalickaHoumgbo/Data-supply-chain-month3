@@ -18,6 +18,7 @@ Documentation transparente des erreurs réelles rencontrées pendant ce projet e
 
 **Ce que ça m'apprend** : un KPI précalculé n'est pas une garantie de fiabilité, il se vérifie empiriquement avant d'être bâti dans une architecture d'analyse.
 
+---
 
 ### 19/08/26 : Erreur d'interprétation de la colonne date dans Bigquery
 
@@ -27,12 +28,22 @@ Documentation transparente des erreurs réelles rencontrées pendant ce projet e
 
 **Investigation** : Dans le fichier Jupyter, le type `date` avait été converti par pandas en un `timestamp` avec une précision de nanosecondes, exporté tel quel dans  Bigquery, il n'a pas su interpréter correctement ce typage, et l'a assigné à un entier.
 
-**Décision** : il a fallu retourner dans le notebook local de l'EDA pour faire une extraction de la partie date elle-même dans le timestamp, avec dt.date. La vérification à l'exécution a prouvé que la colonne date était au bon format `date32[day]`.
+**Décision** : il a fallu retourner dans le notebook local de l'EDA pour extraire la partie date du timestamp, avec dt.date. La vérification à l'exécution a prouvé que la colonne date était au bon format `date32[day]`.
 
-**Ce que ça m'apprend** : le format .parquet n'est pas une garantie intégrale pour la reconnaissance de colonne dans bigquery.
+**Ce que ça m'apprend** : le format .parquet n'est pas une garantie absolue pour la reconnaissance des colonnes dans bigquery.
 
+---
 
+# Entrées
+### 23/08/26 : Modélisation des dimensions entrepôts et produits 
 
+**Contexte** pour séparer les tables en faits et dimensions, il était important de savoir quels attributs iraient dans les tables des entrepôts et des produits
 
+**Découverte** : deux vérifications distinctes étaient nécessaires : 
+- la stabilité dans le temps (est-ce que la valeur change jour après jour pour un même couple SKU × Entrepôt ?) 
+- la granularité (est-ce que la valeur dépend d'une seule dimension ou de leur combinaison ?). 
+En EDA Python, seule la stabilité dans le temps de `reorder_point` et `supplier_lead_time_days` avait été vérifiée. La granularité des 4 colonnes (`unit_cost`, `unit_price`, `reorder_point`, `supplier_lead_time_days`) a été testée en SQL dans BigQuery : chaque colonne montre 5 valeurs distinctes par SKU seul, mais 1 seule valeur par couple SKU × Entrepôt , confirmant leur dépendance à la combinaison des deux dimensions.
+le fichier [`sql/02_granularity_check_fact_attributes.`](sql/02_granularity_check_fact_attributes.) consigne les différentes requetes.
 
+**Décision**: les tables des produits et entrepôts, ne seront constitués que des identifiants `sku_id` et `warehouse_id`, les tables des faits regrouperont le reste des colonnes
 
