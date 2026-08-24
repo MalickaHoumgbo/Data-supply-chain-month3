@@ -43,7 +43,14 @@ Documentation transparente des erreurs réelles rencontrées pendant ce projet e
 - la stabilité dans le temps (est-ce que la valeur change jour après jour pour un même couple SKU × Entrepôt ?) 
 - la granularité (est-ce que la valeur dépend d'une seule dimension ou de leur combinaison ?). 
 En EDA Python, seule la stabilité dans le temps de `reorder_point` et `supplier_lead_time_days` avait été vérifiée. La granularité des 4 colonnes (`unit_cost`, `unit_price`, `reorder_point`, `supplier_lead_time_days`) a été testée en SQL dans BigQuery : chaque colonne montre 5 valeurs distinctes par SKU seul, mais 1 seule valeur par couple SKU × Entrepôt , confirmant leur dépendance à la combinaison des deux dimensions.
-le fichier [`sql/02_granularity_check_fact_attributes.`](sql/02_granularity_check_fact_attributes.) consigne les différentes requetes.
+le fichier [`sql/02_granularity_check_fact_attributes.`](sql/02_granularity_check_fact_attributes.) consigne les différentes requêtes.
 
 **Décision**: les tables des produits et entrepôts, ne seront constitués que des identifiants `sku_id` et `warehouse_id`, les tables des faits regrouperont le reste des colonnes
+
+
+### 23/08/26 : Clé composite et taille d'une table
+
+**Découverte** : une clé composée peut se décliner sur plusieurs colonnes, au lieu d'une seule ; c'est une combinaison qui fait l'unicité de ses valeurs.
+si elle correspond au nombre de lignes de la table, elle est unique pour chaque ligne.
+
 
