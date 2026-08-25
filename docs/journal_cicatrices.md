@@ -66,6 +66,41 @@ si elle correspond au nombre de lignes de la table, elle est unique pour chaque 
 
 **Ce que ça m'apprend**: le choix d'une jointure dépend d'un nombre de paramètres sur la composition des tables, et non de leurs valeurs
 
+---
+
+### 25/08/26: Modifications des structures SQL dans 05_Stockout_risk
+
+**Contexte** : le choix des CTE combinés à leurs requêtes principales marchait, mais était redondant à 2 endroits dans le code des requêtes des ruptures de niveaux 2 et 3.
+
+**Découverte** : pour un problème de portée, j'ai voulu chercher une solution plus optimale, au lieu d'avoir les mêmes blocs de code qu'on réécrit et réexécute plusieurs fois.
+
+**Investigation** :  il fallait trouver une structure qui éliminait la redondance de code, tout en étant fiable au niveau des coûts de calcul. Si les CTE étaient gardées et qu'il fallait faire une modification de code, à chaque fois qu'elles étaient réécrites dans le code, un risque d'oubli pouvait se produire. Les vues sont définies une fois et ne se modifient qu'à un seul endroit.
+
+**Décision** : le choix des vues s'est imposé ; on les crée une seule fois, puis on les appelle simplement dans les requêtes principales. Si je veux modifier une logique de base, je peux la modifier dans la vue définie, au lieu de la répéter à plusieurs endroits du code où elle apparaît. La table source fait 91250 lignes ; pas besoin de  se préoccuper du coût des calculs à chaque appel.
+
+
+### 25/08/26: Clés étrangères entre tables de dimensions
+
+**Contexte** : dans le fichier `03_dimensions_tables.sql` qui modélise la table des dimensions , aucune clé étrangère n'était déclarée pour aucune d'elles
+
+**Découverte** : je me disais que j'avais dû oublier de relier les 2 dimensions entre elles, avec une clé étrangère dans `dim_produit` qui la relierait à `dim_entrepot` et inversement.
+
+**Investigation** : je partais du principe qu’un produit peut se trouver dans un ou plusieurs entrepôts, et un entrepôt peut contenir un ou plusieurs produits,
+Mais la table des faits `fact_daily_stock_movement` contenait déjà la relation qui lie les 2 dimensions, ce qui est conforme au modèle en étoile où les dimensions gravitent autour des faits, contrairement à un modèle relationnel classique.
+
+**Décision** : Aucune clé étrangère n'a été établie entre les dimensions. Dans un modèle en étoile, les dimensions ne se relient jamais directement entre elles, même quand une relation many-to-many existe ; c'est la table de faits qui porte cette relation.
+
+**Ce que ça m'apprend**: Si je réutilise ce modèle sur un futur projet, je ne chercherai plus de clé étrangère entre deux dimensions : je vérifierai plutôt si la table de faits contient déjà les deux clés ensemble
+
+
+
+
+
+
+
+
+
+
 
 
 
