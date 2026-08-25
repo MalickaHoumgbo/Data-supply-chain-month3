@@ -34,7 +34,6 @@ Documentation transparente des erreurs réelles rencontrées pendant ce projet e
 
 ---
 
-# Entrées
 ### 23/08/26 : Modélisation des dimensions entrepôts et produits 
 
 **Contexte** pour séparer les tables en faits et dimensions, il était important de savoir quels attributs iraient dans les tables des entrepôts et des produits
@@ -52,5 +51,21 @@ le fichier [`sql/02_granularity_check_fact_attributes.`](sql/02_granularity_chec
 
 **Découverte** : une clé composée peut se décliner sur plusieurs colonnes, au lieu d'une seule ; c'est une combinaison qui fait l'unicité de ses valeurs.
 si elle correspond au nombre de lignes de la table, elle est unique pour chaque ligne.
+
+---
+
+### 24/08/26 : Choix de jointures sur les CTE de niveaux de rupture
+
+**Contexte** : Comment réunir les CTES des niveaux de rupture pour croiser les ruptures critiques
+
+**Découverte** : j'ai associé à tort les conditions des ruptures critiques et la disponibilité des lignes, j'ai pensé qu'un `full join` réunirait tout le monde et qu'un `inner join` croiserait les combinaisons `sku_id + warehouse_id`, ayant seulement des niveaux de ruptures visibles
+
+**Investigation** : avec l'IA , j'ai reçu les explications de pourquoi cette distinction n'avait pas de sens et qu'il fallait se concentrer sur les combinaisons de `sku_id + warehouse_id` des 2 côtés, peu importe à quels niveaux de rupture elles appartiennent.
+
+**Décision**: j'ai opté pour un inner join, aucune combinaison de clés (`sku_id + warehouse_id`) n'est absente des 2 côtés, si les CTE avaient eu des tables sources ou des filtres différents, le `choix d'un full join ou d'un inner join` aurait pu changer le résultat.
+
+**Ce que ça m'apprend**: le choix d'une jointure dépend d'un nombre de paramètres sur la composition des tables, et non de leurs valeurs
+
+
 
 
