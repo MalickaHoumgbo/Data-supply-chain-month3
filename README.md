@@ -20,7 +20,52 @@ Le scénario de l'entreprise LogiDistrib a été élaboré a posteriori pour fou
 - **Valeur du capital immobilisé en surstock (€)** : chiffre le montant financier bloqué dans les stocks à rotation insuffisante afin d'ordonnancer les actions prioritaires.
 
 ## 🗂️ Architecture des données
-> À compléter : schéma des tables 
+
+Le modèle suit un **schéma en étoile**, avec une table de faits centrale et deux dimensions.
+
+**`fact_daily_stock_movement`** (table de faits)
+Granularité : 1 ligne = 1 SKU × 1 Entrepôt × 1 Jour (50 SKU × 5 entrepôts × 365 jours = 91 250 lignes)
+- `sku_id`, `warehouse_id`, `date` — clés de granularité
+- `units_sold`, `inventory_level`, `order_quantity` — mouvements de stock
+- `unit_cost`, `unit_price` — valorisation financière
+- `reorder_point`, `supplier_lead_time_days` — paramètres de réapprovisionnement
+
+*(Choix de rattacher `unit_cost`, `unit_price`, `reorder_point` et `supplier_lead_time_days` à la table de faits plutôt qu'aux dimensions : voir [Journal des Cicatrices](docs/journal_cicatrices.md).)*
+
+**`dim_produit`** (dimension)
+- `sku_id` (clé) : 50 produits
+
+**`dim_entrepot`** (dimension)
+- `warehouse_id` (clé) : 5 entrepots regionaux
+
+> **Note de modélisation** : `Stockout_Flag`, présent dans le dataset source, a été exclu du modèle — la colonne était constante (0) sur l'ensemble des lignes, sans valeur analytique.
+
+```mermaid
+erDiagram
+    dim_produit ||--o{ fact_daily_stock_movement : "décrit"
+    dim_entrepot ||--o{ fact_daily_stock_movement : "décrit"
+
+    dim_produit {
+        string sku_id PK
+    }
+
+    dim_entrepot {
+        string warehouse_id PK
+    }
+
+    fact_daily_stock_movement {
+        string sku_id PK/FK
+        string warehouse_id PK/FK
+        date date PK
+        int units_sold
+        int inventory_level
+        int order_quantity
+        float unit_cost
+        float unit_price
+        int reorder_point
+        int supplier_lead_time_days
+    }
+```
 
 ## 🛠️ Stack technique
 - **Ingestion / modélisation** : BigQuery / JupyterLab
