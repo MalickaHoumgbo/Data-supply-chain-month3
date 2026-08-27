@@ -105,6 +105,6 @@ Un même nombre de jours de couverture n'a pas la même signification selon la v
 ## 7. Prochaines étapes
 
 - [x] Étape 0 — Cadrage fonctionnel et validation des problématiques métier
-- [ ] Étape 1 — Ingestion et modélisation dans BigQuery / JupyterLab
-- [ ] Étape 2 — Écriture des requêtes SQL avancées (KPI, CTE, window functions)
+- [x] Étape 1 — Ingestion et modélisation dans BigQuery / JupyterLab
+- [x] Étape 2 — Écriture des requêtes SQL avancées (KPI, CTE, window functions)
 - [ ] Étape 3 — Dashboard Power BI et documentation GitHub
