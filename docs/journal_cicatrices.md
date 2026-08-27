@@ -92,15 +92,26 @@ Mais la table des faits `fact_daily_stock_movement` contenait déjà la relation
 
 **Ce que ça m'apprend**: Si je réutilise ce modèle sur un futur projet, je ne chercherai plus de clé étrangère entre deux dimensions : je vérifierai plutôt si la table de faits contient déjà les deux clés ensemble
 
+---
+### 27/08/26: Calibration du seuil pour les stocks dormants.
+
+**Contexte** : Sur ma requête finale de détection des stocks dormants, avec un seuil fixé à 2 × la médiane par segment de capacité de vitesse de ventes (`sales_velocity`), aucune ligne n'a été catégorisée comme stock dormant, sur l'ensemble de la table.
+
+**Découverte** : L'intention de départ était logique : la médiane représente la valeur la plus représentative d'une distribution, donc un multiplicateur (×2) appliqué à cette médiane devait isoler les jours de couverture(`recovery_days`) nettement au-dessus du comportement habituel du segment.
+
+**Investigation** : En me servant d'une requête `MIN/MAX/médiane par segment`, j'ai découvert que la valeur maximale de jours de couverture, tous segments confondus, restait en dessous du seuil théorique (2×médiane). Le seuil n'était donc jamais atteignable : le problème ne venait pas de la logique du multiplicateur, mais du fait qu'il était structurellement trop haut pour la distribution réelle du dataset (rapport max/médiane observé 1,7-1,8x, contre 2x attendu).
+
+**Décision** :J'ai remplacé l'ancien par un seuil plus proche de la distribution elle-même : `PERCENTILE_CONT(recovery_days, 0.9)` par segment, qui isole automatiquement les 10 % de valeurs de jours de couverture les plus élevées.
+
+**Ce que ça m'apprend** : Avant de figer un multiplicateur ou tout autre critère, il faut vérifier au préalable l'étendue réelle des données (min/max/percentiles) plutôt que de faire confiance à l'intuition métier seule.
 
 
+### 27/08/26: Seuils p90 proches entre différents segments..
 
+**Constat** : Une fois le seuil P90 par segment mis en place et la requête retestée, les valeurs de seuil obtenues pour chaque `sales_velocity` (rapide / moyen / lent) se sont révélées très proches les unes des autres (`29-30 jours`), alors qu'une vraie segmentation par vitesse de vente devrait normalement produire des seuils différents.
 
+**Interprétation** : C'est la confirmation chiffrée d'une limite déjà identifiée  dans le cadrage du projet : le dataset est synthétique, et ne reproduit pas de vraie corrélation entre la vitesse de vente d'un produit et son niveau de stock. Dans un dataset réel, un produit à rotation rapide aurait un seuil de "stock dormant" beaucoup plus bas qu'un produit à rotation lente, car son rythme de vente habituel est différent.
 
+**Ce que ça m'apprend** : la nouvelle approche pour la détection du seuil avec p90 n'est pas à remettre en cause, mais elle reste limitée sur ce dataset precis.
 
-
-
-
-
-
-
+**Note additionnelle** : Au cours de la manipulation SQL dans BigQuery, il a été de nouveau confirmé via les valeurs anormalement proches de `average_sales` (entre 19 et 22 selon les produits)  que le dataset ne repose pas sur un historique de comportements de vente réels, mais sur une génération synthétique.
