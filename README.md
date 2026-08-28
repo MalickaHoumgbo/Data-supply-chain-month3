@@ -54,9 +54,9 @@ erDiagram
     }
 
     fact_daily_stock_movement {
-        string sku_id PK/FK
-        string warehouse_id PK/FK
-        date date PK
+        string sku_id PK
+        string warehouse_id PK
+        date date 
         int units_sold
         int inventory_level
         int order_quantity
