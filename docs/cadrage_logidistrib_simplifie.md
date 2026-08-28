@@ -6,7 +6,7 @@
 
 ## 1. Contexte & scénario
 
-**LogiDistrib** est un distributeur B2B de matériel et fournitures industrielles/chantier, qui s'appuie sur **5 entrepôts régionaux** (`WH_1` à `WH_5`) pour approvisionner un réseau de magasins clients.
+**LogiDistrib** est un distributeur B2B de matériel et fournitures industrielles/de chantier, qui s'appuie sur **5 entrepôts régionaux** (`WH_1` à `WH_5`) pour approvisionner un réseau de magasins clients.
 
 La direction des opérations fait face à un double problème :
 1. **Des ruptures de stock récurrentes**, qui empêchent d'honorer certaines commandes clients.
@@ -24,12 +24,12 @@ Dataset Kaggle *High-Dimensional Supply Chain Inventory* — 1 an d'historique q
 
 | Colonne | Type | Rôle Analytic & Traitement |
 | :--- | :--- | :--- |
-| `Date` | Temporal | Axe temporel principal de l'analyse. |
+| `Date` | Temporel | Axe temporel principal de l'analyse. |
 | `SKU_ID` | Identifiant | Clé unique du produit (50 références). |
 | `Warehouse_ID` | Identifiant | Clé du site logistique (5 entrepôts stables). |
 | `Units_Sold` | Quantité | Mouvement de sortie quotidien. Sert au calcul de la vitesse moyenne de vente. |
 | `Inventory_Level` | Quantité | État physique du stock au jour $T$. Base du calcul de couverture et de surstock. |
-| `Supplier_Lead_Time_Days` | Délai (Jours) | Temps d'approvisionnement fournisseur. Donnée d'entrée pour le point de commande. |
+| `Supplier_Lead_Time_Days` | Délai (Jours) | Temps d'approvisionnement du fournisseur. Donnée d'entrée pour le point de commande. |
 | `Reorder_Point` | Seuil (Unités) | Seuil de réapprovisionnement configuré par couple SKU/Entrepôt. |
 | `Order_Quantity` | Quantité | Mouvement d'entrée commandé au fournisseur. |
 | `Unit_Cost` | Monétaire (€) | Coût d'achat unitaire. Nécessaire pour valoriser le capital immobilisé. |
