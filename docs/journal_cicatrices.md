@@ -115,3 +115,28 @@ Mais la table des faits `fact_daily_stock_movement` contenait déjà la relation
 **Ce que ça m'apprend** : la nouvelle approche pour la détection du seuil avec p90 n'est pas à remettre en cause, mais elle reste limitée sur ce dataset precis.
 
 **Note additionnelle** : Au cours de la manipulation SQL dans BigQuery, il a été de nouveau confirmé via les valeurs anormalement proches de `average_sales` (entre 19 et 22 selon les produits)  que le dataset ne repose pas sur un historique de comportements de vente réels, mais sur une génération synthétique.
+
+
+---
+
+### 28/08/26: Lacunes sur les performances des requêtes en environnement cloud
+
+**Constat** : Lors d'une session de crash test d'auto-évaluation, je me suis rendue compte que, je ne maîtrise pas encore l'impact des CTEs empilées, des window functions (NTILE, PERCENTILE_CONT), des VIEWs, et du volume de données sur la performance/coût en environnement Cloud (BigQuery). 
+
+**Décision** : Face à une potentielle question de Tech Lead sur la montée en charge (×100, ×1000), j'ai choisi de ne pas deviner une réponse théorique non maîtrisée, et de planifier une session d'apprentissage dédiée à la performance Cloud plutôt que de simuler une compréhension que je n'ai pas.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
