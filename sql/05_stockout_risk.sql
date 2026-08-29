@@ -30,6 +30,8 @@ select sku_id,
 from `logidistrib_dwh.v_recent_inventory`
 where rang = 1;
 
+
+
 /* niveau 3 : anayse du diagnostic structurel du seuil de réapprovisionnement 
 d'un produit par entrepot*/
 
@@ -72,6 +74,9 @@ from  `logidistrib_dwh.v_projected_stock_flow`;
 -- une jointure est nécessaire entre les 2 tables intermediare
 -- on veux regarder quels produits présentent à la fois une alerte de rupture probable(risque immédiat)
 -- et un diagnostic structurel faible (risque structurel)
+
+-- vue créée pour exposer proprement le resultat final et permettre la connexion à PowerBI
+create view logidistrib_dwh.v_stockout_risk as 
 select psf.sku_id,
        psf.warehouse_id,
        rc.inventory_level,
@@ -88,3 +93,6 @@ join `logidistrib_dwh.v_recent_inventory` as rc on  psf.sku_id = rc.sku_id
 and psf.warehouse_id = rc.warehouse_id
 where rc.rang = 1  /*on garde uniquement les produits avec leur plus récente date d'enregistrement
 pour rester conforme aux conditions du risque immédiat */
+
+select * from `logidistrib_dwh.v_stockout_risk`
+limit 10;

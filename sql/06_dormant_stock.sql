@@ -3,8 +3,10 @@
 /* on veux estimer le jour de couvertiure d'un produit
 en faisant un rapport entre sa vietsse de vente repertorié sur un hsitorique ( un an dans le cas de nos données)
 et son stcok le plus récent, pour dire en gros :
- Avec mon stock actuel, combient de jours il va tenir si ce rythme de vente se maintient ? */
+Avec mon stock actuel, combient de jours il va tenir si ce rythme de vente se maintient ? */
 
+-- vue créée pour exposer proprement le resultat final et permettre la connexion à PowerBI
+create view `logidistrib_dwh.v_dormant_stock` as 
 
 -- classification des stocks actuels selon les dates décroissantes
 with recent_inventory as (
@@ -108,6 +110,8 @@ select sku_id,
 from threshold
 order by sales_velocity asc;
 
+select * from `logidistrib_dwh.v_dormant_stock`
+limit 10
 
 
 
