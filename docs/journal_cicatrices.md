@@ -126,7 +126,43 @@ Mais la table des faits `fact_daily_stock_movement` contenait déjà la relation
 **Décision** : Face à une potentielle question de Tech Lead sur la montée en charge (×100, ×1000), j'ai choisi de ne pas deviner une réponse théorique non maîtrisée, et de planifier une session d'apprentissage dédiée à la performance Cloud plutôt que de simuler une compréhension que je n'ai pas.
 
 
+---
 
+### 30/08/26: Choix d'import dans Power BI.
+
+**contexte** :  pour réaliser les opérations de manipulation dans Power Bi, je devais choisir entre 2 méthodes d'import des données depuis BigQuery, `import` et `DirectQuery`.
+
+**Découverte** : par méconnaissance , j'ai choisi `DirectQuery`, sans mesurer en temps réel, depuis BigQuery, les performances de chaque manipulation future dans Power BI.
+
+**Investigation** : la différence n'est pas liée au volume de données, mais à la fréquence des requêtes envoyées à BigQuery (une fois pour `Import`, à chaque interaction pour `DirectQuery`), et cette fréquence se combine avec la complexité des vues (CTEs, window functions) pour déterminer le coût réel en termes de performance. Ce mauvais choix initial a entraîné un doublon de toutes mes requêtes (14 au lieu de 7) au moment de recommencer, qu'il a fallu nettoyer manuellement.
+
+**Décision** : pour un projet de portfolio, une exécution unique des requêtes dans un fichier local est préférable, raison pour laquelle, j'ai choisi la méthode `import`.
+
+
+---
+
+### 31/08/26 : Choix du scatter plot pour l'axe des stocks dormants
+
+**contexte**: pour faire cohabiter les différentes métriques liées à la détection des stocks dormants sur la page 3 de la présentation, je pensais réutiliser un `bar chart classique` comme sur la page 2, sans réussir à  intégrer `recovery_days` et le `tier de rotation` en même temps.
+
+**Investigation** : Un bar chart ne peut représenter qu'une seule dimension numérique à la fois. Or, l'urgence réelle d'un stock dormant dépend du croisement de deux mesures numériques (`recovery_days` et valeur financière immobilisée) ; deux couples(`sku_id` + `warehouse_id`) à valeur immobilisée égale peuvent avoir un niveau d'urgence totalement différent selon leur `recovery_days`.
+
+**Décision** : Le `scatter plot` est le visuel adapté dès qu'on veut représenter la corrélation ou le croisement entre deux mesures numériques, avec un troisième axe catégoriel (`le type de rotation`) porté par la couleur des points.
+
+**Ce que ça m'apprend** : Le choix d'un type de graphique doit découler de la structure de la question métier ,pas d'une habitude ou d'une réutilisation automatique du visuel précédent.
+
+
+### 31/08/26 : Mesure vs colonne calculée (Page 3, type_de_rotation)
+
+**Contexte** : le scatter plot une fois représenté, la légende des couples qui se distinguaient sur le diagramme par couleur de `type de rotation`, portait des valeurs numériques 1, 2, 3 dues à la colonne `sales_velocity `au lieu de valeurs explicites textuelles (`rotation lente, moyenne, rapide`)
+
+**Découverte** : pour ajouter une traduction explicite de la colonne numérique, il fallait créer une colonne dans Power BI liée à la table des stock_dormant, qui retransposerait les catégories de rotation respectives en texte immédiatement compréhensible. En voulant créer cette colonne, j'ai eu une erreur : Le nom `sales_velocity` est introuvable en écrivant une formule `SWITCH()` censée traduire `sales_velocity (1/2/3)` en texte lisible.
+
+**Investigation** : L'objet avait été créé via "Nouvelle mesure" et non "Nouvelle colonne". Une mesure se calcule après agrégation, dans un contexte de filtre global. Une colonne calculée, elle, s'exécute ligne par ligne au chargement des données, avec un accès direct à chaque valeur.
+
+**Décision** : Recréer l'objet comme colonne calculée (bouton "Nouvelle colonne", depuis la table `v_dormant_stock`), avec la même formule `SWITCH()`.
+
+**Ce que ça m'apprend** : l'erreur de syntaxe n'est parfois qu'une erreur de concecption précedente.
 
 
 
