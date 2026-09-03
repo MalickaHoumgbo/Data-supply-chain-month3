@@ -162,15 +162,13 @@ Mais la table des faits `fact_daily_stock_movement` contenait déjà la relation
 
 **Décision** : Recréer l'objet comme colonne calculée (bouton "Nouvelle colonne", depuis la table `v_dormant_stock`), avec la même formule `SWITCH()`.
 
-**Ce que ça m'apprend** : l'erreur de syntaxe n'est parfois qu'une erreur de conception précedente.
+**Ce que ça m'apprend** : l'erreur de syntaxe n'est parfois qu'une erreur de conception antérieure.
 
 ----
 
 ### 01/09/26 : biais de filtre sur warehouse_id entre table de faits (Page 1, combo chart par entrepôt)
 
 **Constat**: Sur un graphique combiné (`Produits_à_risque en barres`, `Valeur_stock_dormant en ligne`, `axe warehouse_id`), la mesure Produits_à_risque affichait `32 pour chaque entrepôt` identique partout, au lieu d'une répartition.
-
-Hypothèse initiale : Un problème sur la mesure DAX elle-même, ou une relation manquante entre v_dormant_stock et v_stockout_risk.
 
 **Investigation** : La colonne `warehouse_id` avait été placée comme champ de l'axe X du combo chart, en provenance d'une des tables de faits, l'IA m'a expliqué que le champ `warehouse_id`, devait provenir d'une table de dimensions, la table `dim_entrepot`, et pour être sûr que ça fonctionne, il a fallu aussi vérifier que les 2 tables 2 faits `v_dormant_stock` et `v_stockout_risk`, aient une relation commune avec la table dim_entrepot, pour que la colonne warehouse_id soit correctement exploitable.
 
