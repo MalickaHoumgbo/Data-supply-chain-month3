@@ -1,27 +1,26 @@
-# Product Inventory Management
+# LogiDistrib: Product Inventory Management
 
-## 🎯 Contexte & problématique métier
-LogiDistrib est un distributeur B2B de matériel et fournitures industrielles pour le secteur de la construction. À travers ses 5 entrepôts régionaux, l'entreprise fait face à un double dysfonctionnement logistique : des ruptures de stock récurrentes d'une part, et des produits en surstock d'autre part. Ce déséquilibre est particulièrement coûteux, car les ruptures entraînent des ventes perdues et dégradent la satisfaction client, tandis que les surstocks immobilisent inutilement de la trésorerie et saturent l'espace de stockage.
+Projet data end-to-end (Python → BigQuery → Power BI) simulant l'analyse de stock d'un distributeur B2B industriel réparti sur 5 entrepôts régionaux.
 
-L'objectif stratégique du projet est donc d'identifier les causes des ruptures afin d'anticiper les risques, tout en priorisant le traitement des surstocks en fonction de leur impact financier réel.
+## 🎯 Contexte & objectif
+
+LogiDistrib fait face à une double inquiétude logistique : de potentielles ruptures de stock, et des produits en surstock qui immobilisent inutilement de la trésorerie.
+L'enjeu principal est donc préventif : repérer en amont les produits à risque de rupture à court terme ou dont le seuil de réapprovisionnement est structurellement mal calibré, tout en priorisant le traitement des surstocks selon leur impact financier réel.
 
 ## 🗃️ Origine des données
-Les analyses reposent sur le dataset public Kaggle [High-Dimensional Supply Chain Inventory Dataset](https://www.kaggle.com/datasets/ziya07/high-dimensional-supply-chain-inventory-dataset).
-Le scénario de l'entreprise LogiDistrib a été élaboré a posteriori pour fournir un cadre fonctionnel et métier réaliste à l'exploitation de ces données.
 
-## 📊 KPI suivis
-**Axe 1 — Rupture de stock**
-- **Indicateur de rupture de stock** (`Stockout_Flag`) : mesure le constat historique des incidents de rupture constatés sur chaque couple SKU/entrepôt.
-- **Rapport du stock actuel au seuil de point de commande** (`Inventory_Level` vs `Reorder_Point`) : évalue le risque d'épuisement imminent en comparant le niveau de stock disponible au seuil d'alerte configuré.
-- **Indice de calibration du point de commande** : évalue si le seuil de réapprovisionnement configuré est bien adapté au délai fournisseur et à la vitesse de vente habituelle.
+Les analyses reposent sur le dataset public Kaggle [High-Dimensional Supply Chain Inventory Dataset](https://www.kaggle.com/datasets/ziya07/high-dimensional-supply-chain-inventory-dataset). Le scénario LogiDistrib a été construit *a posteriori* pour donner un cadre métier réaliste à ces données.
 
-**Axe 2 — Stock dormant / surstock**
-- **Jours de couverture de stock** : estime la durée pendant laquelle le stock actuel permettra de répondre à la demande au rythme de vente moyen.
-- **Valeur du capital immobilisé en surstock (€)** : chiffre le montant financier bloqué dans les stocks à rotation insuffisante afin d'ordonnancer les actions prioritaires.
+## 🧭 Axes d'analyse
+
+- **Rupture de stock** — le stock va-t-il tenir ? Constat des ruptures passées, alerte sur les risques présents, diagnostic des seuils mal calibrés.
+- **Stock dormant** — le stock est-il resté trop longtemps ? Repérage des surstocks et priorisation selon la valeur financière immobilisée.
+
+*(Détail complet des KPI et de la logique métier : voir [Documentation complémentaire](#-documentation-complémentaire).)*
 
 ## 🗂️ Architecture des données
 
-Le modèle suit un **schéma en étoile**, avec une table de faits centrale et deux dimensions.
+Modèle en **schéma en étoile**, avec une table de faits centrale et deux dimensions.
 
 **`fact_daily_stock_movement`** (table de faits)
 Granularité : 1 ligne = 1 SKU × 1 Entrepôt × 1 Jour (50 SKU × 5 entrepôts × 365 jours = 91 250 lignes)
@@ -30,15 +29,10 @@ Granularité : 1 ligne = 1 SKU × 1 Entrepôt × 1 Jour (50 SKU × 5 entrepôts 
 - `unit_cost`, `unit_price` — valorisation financière
 - `reorder_point`, `supplier_lead_time_days` — paramètres de réapprovisionnement
 
-*(Choix de rattacher `unit_cost`, `unit_price`, `reorder_point` et `supplier_lead_time_days` à la table de faits plutôt qu'aux dimensions : voir [Journal des Cicatrices](docs/journal_cicatrices.md).)*
+**`dim_produit`** — `sku_id` (clé), 50 produits
+**`dim_entrepot`** — `warehouse_id` (clé), 5 entrepôts régionaux
 
-**`dim_produit`** (dimension)
-- `sku_id` (clé) : 50 produits
-
-**`dim_entrepot`** (dimension)
-- `warehouse_id` (clé) : 5 entrepots regionaux
-
-> **Note de modélisation** : `Stockout_Flag`, présent dans le dataset source, a été exclu du modèle — la colonne était constante (0) sur l'ensemble des lignes, sans valeur analytique.
+> `Stockout_Flag`, présent dans le dataset source, a été exclu du modèle : constant à 0 sur l'ensemble des lignes, sans valeur analytique.
 
 ```mermaid
 erDiagram
@@ -56,7 +50,7 @@ erDiagram
     fact_daily_stock_movement {
         string sku_id PK
         string warehouse_id PK
-        date date 
+        date date
         int units_sold
         int inventory_level
         int order_quantity
@@ -67,30 +61,35 @@ erDiagram
     }
 ```
 
-## 🛠️ Stack technique
-- **Ingestion / modélisation** : BigQuery / JupyterLab
-- **Requêtes analytiques** : SQL avancé (CTE, window functions)
-- **Restitution** : Power BI
+## 🚀 Démarche du projet
 
-## 📁 Structure du dépôt
-```
-├── notebooks/    → notebook Python (EDA, préparation des données)
-├── sql/          → requêtes SQL BigQuery
-├── power_bi/     → dashboard et captures d'écran
-└── docs/         → documentation, journal des cicatrices, transparence IA
-```
-
-## 🚀 Comment explorer ce projet
-- **Cadrage métier & logique d'analyse** : pour consulter la méthodologie complète, les détails des axes d'analyse et les règles de gestion métier, référez-vous au document de cadrage détaillé : [`docs/cadrage_final_logidistrib.md`](docs/cadrage_final_logidistrib.md).
-- **Prise en main & exécution** : À compléter (instructions pour exécuter le notebook, lancer les requêtes SQL et ouvrir le tableau de bord Power BI).
-
+1. **Ingestion & modélisation** (`notebooks/`) — exploration et préparation des données en Python/JupyterLab, export `.parquet`, ingestion dans **BigQuery**.
+2. **Requêtes analytiques** (`sql/`) — construction des KPI via SQL avancé (CTE, window functions) directement dans **BigQuery**, matérialisés en vues par axe métier (`v_stockout_risk`, `v_dormant_stock`).
+3. **Restitution** (`power_bi/`) — dashboard **Power BI** (3 pages) connecté en mode Import, publié sur **Power BI Service**.
 
 ## ✅ Résultats clés
-> À compléter en fin de projet.
 
-## 🤝 Transparence sur l'usage de l'IA
-Voir [`docs/charte_transparence_ia.md`](docs/charte_transparence_ia.md).
+![diagnostic des stocks par entrepôt](power_bi/etat_des_lieux_par_entrepot.png "Diagnostic des stocks par entrepôt")
+
+- Les ruptures effectivement constatées restent minoritaires (**12,8 % des produits concernés**),confirmant que l'enjeu principal est bien préventif plutôt que curatif.
+- **32 produits** identifiés à risque de rupture, pour une **valeur de stock dormant de 202 714,94 €**.
+- Répartition des risques par niveau : 18 structurels, 13 immédiats, 1 critique.
+- les stocks dormants ne sont pas dans une catégorisation unique (différents entrepôts, différents types de rotation), chacune priorisée en fonction du capital immobilisé
+
+## 🔐 Accès aux environnements cloud (Power BI Service, BigQuery)
+
+Pour simuler un environnement réel de production en entreprise, le dashboard de présentation est en **accès restreint** : une demande via [malicka.houmgbo.data@outlook.com] est nécessaire pour consulter le rapport interactif complet.
+
+Pour BigQuery, l'environnement d'exécution des requêtes n'est pas partagé directement, mais les requêtes SQL sont disponibles dans le dossier `sql/` du dépôt — l'usage de fonctions propres à BigQuery (ex. `SAFE_DIVIDE`, absente de PostgreSQL) atteste qu'elles ont bien été exécutées sur cet environnement.
+
+*Le partage d'accès direct aux environnements cloud (permissions IAM, rôles en lecture seule) sera abordé lors d'un prochain projet, en parallèle de l'introduction de dbt et du versioning avancé.*
+
+## 📚 Documentation complémentaire
+
+- **[Cadrage fonctionnel](docs/cadrage_final_logidistrib.md)** — pour comprendre la logique métier complète : KPI détaillés, règles de segmentation, arbitrages de périmètre.
+- **[Journal des Cicatrices](docs/journal_cicatrices.md)** — pas seulement une liste d'erreurs pour faire authentique, mais la preuve que chaque choix technique (modélisation, SQL, visualisation ) a été challengé et compris, pas seulement exécuté.
+- **[Charte de transparence IA](docs/charte_transparence_ia.md)** — la posture assumée : l'IA comme outil de vulgarisation et de relecture, jamais comme rédacteur du code.
 
 ## Auteur
 
-MalickaHoumgbo/ [GitHub](https://github.com/MalickaHoumgbo)
+MalickaHoumgbo / [GitHub](https://github.com/MalickaHoumgbo)
