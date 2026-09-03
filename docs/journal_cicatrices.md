@@ -176,9 +176,22 @@ Mais la table des faits `fact_daily_stock_movement` contenait déjà la relation
 
 **Ce que ça m'apprend** : Dans un modèle en étoile, toujours privilégier les colonnes de la table de dimension pour les axes de filtrage/segmentation d'un visuel qui combine plusieurs tables de faits, jamais une colonne identique par son nom mais physiquement située dans une table de faits, même si une relation existe quelque part dans le modèle.
 
+----
 
+### 03/09/26 : fiabilité des axes d'analyse observés à posteriori
 
+## Limite de donnée vs limite de méthode — Axe 1 vs Axe 2
 
+| | Axe 1 : `Stockout_Flag` | Axe 2 : Segmentation par rotation |
+|---|---|---|
+| **Constat** | Colonne constante à 0 sur l'ensemble des données | `avg(units_sold)` trop proche d'un produit à l'autre pour différencier réellement les tiers `NTILE(3)` |
+| **Nature du problème** | Absence totale de signal exploitable | Signal présent mais peu différenciant sur ce dataset précis |
+| **Conséquence** | Niveau 1 entièrement retiré de l'Axe 1, aucune reconstruction possible | Jours de couverture / tiers de rotation restent calculés et affichés, avec une fiabilité réduite documentée sur la diapo |
+| **Origine** | Donnée manquante à la source | Distribution resserrée du dataset synthétique |
+| **La méthode est-elle en cause ?** | Non applicable : rien à calculer | **Non** : le pipeline (`NTILE` → `PERCENTILE_CONT` par tier) reste valide et se comporterait normalement sur une distribution aux ventes plus dispersées |
+| **Impact sur l'axe global** | Axe 1 amputé d'un niveau de lecture | Axe 2 reste **entièrement exploitable** : `total_stock_value` (`Inventory_Level × Unit_Cost`) ne dépend pas de `units_sold` et guide seul la priorisation, indépendamment du biais du tiers de rotation |
+
+**Ce que ça m'apprend :** une limite de données (dataset synthétique trop homogène) n'est pas une limite de méthode (le calcul reste correct). Savoir distinguer les deux évite de remettre en cause une logique qui fonctionne.
 
 
 
