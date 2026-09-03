@@ -86,7 +86,7 @@ Pour BigQuery, l'environnement d'exécution des requêtes n'est pas partagé dir
 
 ## 📚 Documentation complémentaire
 
-- **[Cadrage fonctionnel](docs/cadrage_final_logidistrib.md)** — pour comprendre la logique métier complète : KPI détaillés, règles de segmentation, arbitrages de périmètre.
+- **[Cadrage fonctionnel](docs/cadrage_final.md)** — pour comprendre la logique métier complète : KPI détaillés, règles de segmentation, arbitrages de périmètre.
 - **[Journal des Cicatrices](docs/journal_cicatrices.md)** — pas seulement une liste d'erreurs pour faire authentique, mais la preuve que chaque choix technique (modélisation, SQL, visualisation ) a été challengé et compris, pas seulement exécuté.
 - **[Charte de transparence IA](docs/charte_transparence_ia.md)** — la posture assumée : l'IA comme outil de vulgarisation et de relecture, jamais comme rédacteur du code.
 
